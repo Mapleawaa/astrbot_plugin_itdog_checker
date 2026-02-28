@@ -1,14 +1,20 @@
-# astrbot-plugin-helloworld
+# astrbot_plugin_itdog_checker
 
-AstrBot 插件模板 / A template plugin for AstrBot plugin feature
+基于 itdog.cn 的网络测速插件，支持 Ping / TCPing / HTTP / Traceroute，并支持按运营商与省份/城市筛选节点。
 
-> [!NOTE]
-> This repo is just a template of [AstrBot](https://github.com/AstrBotDevs/AstrBot) Plugin.
-> 
-> [AstrBot](https://github.com/AstrBotDevs/AstrBot) is an agentic assistant for both personal and group conversations. It can be deployed across dozens of mainstream instant messaging platforms, including QQ, Telegram, Feishu, DingTalk, Slack, LINE, Discord, Matrix, etc. In addition, it provides a reliable and extensible conversational AI infrastructure for individuals, developers, and teams. Whether you need a personal AI companion, an intelligent customer support agent, an automation assistant, or an enterprise knowledge base, AstrBot enables you to quickly build AI applications directly within your existing messaging workflows.
+## 内网 Seat 模式
 
-# Supports
+当 AstrBot 所在机器无法直连外网或存在证书链问题时，可使用“Seat 客户端”模式：
 
-- [AstrBot Repo](https://github.com/AstrBotDevs/AstrBot)
-- [AstrBot Plugin Development Docs (Chinese)](https://docs.astrbot.app/dev/star/plugin-new.html)
-- [AstrBot Plugin Development Docs (English)](https://docs.astrbot.app/en/dev/star/plugin-new.html)
+- AstrBot 插件作为服务端：只负责接收群聊命令、下发任务、回传报告
+- 独立 Python Seat 客户端作为执行端：主动轮询拉取任务，在可联网环境中执行 itdog 请求，并把结果回传给插件
+
+服务端默认监听：
+
+- `http://127.0.0.1:8765`
+
+可用环境变量：
+
+- `ITDOG_BRIDGE_HOST`：监听地址（默认 `127.0.0.1`）
+- `ITDOG_BRIDGE_PORT`：监听端口（默认 `8765`）
+- `ITDOG_BRIDGE_TOKEN`：可选鉴权 token（客户端需在请求头携带 `X-ITDOG-TOKEN`）

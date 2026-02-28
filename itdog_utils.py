@@ -3,6 +3,8 @@ import json
 import base64
 import hashlib
 import asyncio
+import os
+import ssl
 import aiohttp
 import websockets
 from urllib.parse import urlparse
@@ -66,8 +68,36 @@ def _extract_from_response(content: str, pattern: str) -> Optional[str]:
 
 class ItdogClient:
     def __init__(self):
-        self.session = aiohttp.ClientSession(headers=DEFAULT_HEADERS)
+        ssl_ctx = self._build_ssl_context()
+        connector = aiohttp.TCPConnector(ssl=ssl_ctx)
+        self.session = aiohttp.ClientSession(headers=DEFAULT_HEADERS, connector=connector, trust_env=True)
         self.cookies = {}
+
+    def _build_ssl_context(self) -> ssl.SSLContext:
+        no_verify = os.environ.get("ITDOG_SSL_NO_VERIFY", "").strip().lower() in ("1", "true", "yes", "on")
+        if no_verify:
+            ctx = ssl.create_default_context()
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+            return ctx
+
+        ca_bundle = (
+            os.environ.get("ITDOG_CA_BUNDLE")
+            or os.environ.get("SSL_CERT_FILE")
+            or os.environ.get("REQUESTS_CA_BUNDLE")
+        )
+        if ca_bundle:
+            try:
+                return ssl.create_default_context(cafile=ca_bundle)
+            except Exception:
+                pass
+
+        try:
+            import certifi
+
+            return ssl.create_default_context(cafile=certifi.where())
+        except Exception:
+            return ssl.create_default_context()
 
     async def close(self):
         await self.session.close()
@@ -96,7 +126,7 @@ class ItdogClient:
     ):
         """WebSocket 接收数据"""
         try:
-            async with websockets.connect(wss_url) as ws:
+            async with websockets.connect(wss_url, ssl=self._build_ssl_context()) as ws:
                 await ws.send(json.dumps({
                     "task_id": task_id,
                     "task_token": task_token

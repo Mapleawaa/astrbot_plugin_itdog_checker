@@ -1,3 +1,5 @@
+from typing import List
+
 # 常用节点组合
 COMPACT_NODES = {
     "中国电信": [

@@ -1,6 +1,6 @@
 name: astrbot_plugin_itdog_checker
 display_name: Itdog 网络测速
 desc: 基于 itdog.cn 的网络测速插件，支持 Ping, TCPing, HTTP 测速和 Traceroute，支持按运营商和省份/城市筛选节点。
-version: v1.3.0
+version: v1.8.0
 author: Astrbot
 repo: https://github.com/Soulter/AstrBot
